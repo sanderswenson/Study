@@ -13,8 +13,8 @@ BASE_URL = "https://api.binance.us/api/v3"
 API_KEY = os.getenv('BINANCE_API_KEY')
 SECRET_KEY = os.getenv('BINANCE_SECRET_KEY')
 
-print(f"API Key: {API_KEY[:5]}...{API_KEY[-5:] if API_KEY else 'None'}")
-print(f"Secret Key: {SECRET_KEY[:5]}...{SECRET_KEY[-5:] if SECRET_KEY else 'None'}")
+print(f"API Key: ...{API_KEY[-5:] if API_KEY else 'None'}")
+print(f"Secret Key: ...{SECRET_KEY[-5:] if SECRET_KEY else 'None'}")
 
 def get_binance_data(endpoint, params=None):
     url = f"{BASE_URL}/{endpoint}"
