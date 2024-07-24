@@ -109,7 +109,7 @@ def main(input_file, output_folder):
     logger.info(f"Conducting research for goal: '{goal}' with {len(tasks)} top-level tasks")
     
     os.makedirs(output_folder, exist_ok=True)
-    
+
     # with open(os.path.join(output_folder, "goal.md"), 'w') as f:
     #     f.write(f"# {goal}\n\n")
     #     for task in tasks:
@@ -135,7 +135,7 @@ def main(input_file, output_folder):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Conduct background research on tasks and create Markdown files")
-    parser.add_argument("--input", default="research_output.md", help="Input Markdown file with tasks")
+    parser.add_argument("--input", default=config.DEFAULT_TASKLIST_FILE, help="Input Markdown file with tasks")
     parser.add_argument("--output", default=config.DEFAULT_OUTPUT_FOLDER, help="Output folder for research results")
     args = parser.parse_args()
 

@@ -101,7 +101,7 @@ def main(goal, output_file):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Expand tasks from a goal and export to Markdown")
     parser.add_argument("--max-depth", type=int, default=config.MAX_DEPTH, help="Maximum depth for task expansion")
-    parser.add_argument("--output", default=config.DEFAULT_OUTPUT_FOLDER, help="Output file name")
+    parser.add_argument("--output", default=config.DEFAULT_TASKLIST_FILE, help="Output file name")
     parser.add_argument("--goal", default=config.DEFAULT_GOAL, help="The main goal to expand into tasks")
     args = parser.parse_args()
 

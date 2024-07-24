@@ -8,6 +8,7 @@ MAX_RETRIES = 3
 CALLS_PER_MINUTE = 50
 
 # Output configuration
+DEFAULT_TASKLIST_FILE = "tasks.md"
 DEFAULT_OUTPUT_FOLDER = "research_output"
 DEFAULT_GOAL = "Bake a cake"
 
