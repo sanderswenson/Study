@@ -1,5 +1,4 @@
 # OpenAI API configuration
-OPENAI_API_KEY =
 OPENAI_MODEL = "gpt-4o-mini"
 MAX_TOKENS = 500
 TEMPERATURE = 0.7
@@ -10,6 +9,7 @@ CALLS_PER_MINUTE = 50
 
 # Output configuration
 DEFAULT_OUTPUT_FOLDER = "research_output"
+DEFAULT_GOAL = "Bake a cake"
 
 # Depth configuration
 MAX_DEPTH = 1

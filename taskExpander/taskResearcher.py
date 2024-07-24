@@ -4,11 +4,10 @@ import time
 import argparse
 import logging
 from dotenv import load_dotenv
-from tqdm import tqdm
 import re
 import concurrent.futures
-import json
 from ratelimit import limits, sleep_and_retry
+import config
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -17,10 +16,6 @@ logger = logging.getLogger(__name__)
 # Load environment variables
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
-
-# Constants
-MAX_RETRIES = 3
-CALLS_PER_MINUTE = 50
 
 class Task:
     def __init__(self, number, name, depth):
@@ -65,34 +60,25 @@ def parse_md_tasks(md_file):
     return goal, tasks
 
 @sleep_and_retry
-@limits(calls=CALLS_PER_MINUTE, period=60)
+@limits(calls=config.CALLS_PER_MINUTE, period=60)
 def research_task(task):
-    prompt = f"""Task: {task}
+    prompt = config.RESEARCH_PROMPT.format(task=task)
 
-Conduct background research on this task. Consider:
-
-1. Key concepts and theories related to the task
-2. Best practices or methodologies for implementing the task
-3. Potential challenges or obstacles in accomplishing the task
-4. Resources or tools that might be helpful
-
-Provide a concise summary of your findings, focusing on the most relevant and actionable information."""
-
-    for attempt in range(MAX_RETRIES):
+    for attempt in range(config.MAX_RETRIES):
         try:
             response = openai.chat.completions.create(
-                model="gpt-4o-mini",
+                model=config.OPENAI_MODEL,
                 messages=[
                     {"role": "system", "content": "You are a knowledgeable research assistant with expertise in various fields."},
                     {"role": "user", "content": prompt}
                 ],
-                max_tokens=500,
+                max_tokens=config.MAX_TOKENS,
                 n=1,
-                temperature=0.7,
+                temperature=config.TEMPERATURE,
             )
             return response.choices[0].message.content.strip()
         except openai.error.RateLimitError:
-            if attempt < MAX_RETRIES - 1:
+            if attempt < config.MAX_RETRIES - 1:
                 time.sleep(20)
             else:
                 logger.error(f"Rate limit reached. Unable to research task: {task}")
@@ -101,19 +87,10 @@ Provide a concise summary of your findings, focusing on the most relevant and ac
             logger.error(f"Error researching task '{task}': {str(e)}")
             return f"Error occurred while researching this task: {str(e)}"
 
-def create_folder_structure(task, base_path):
-    current_path = base_path
-    for i in range(1, task.depth + 1):
-        folder_name = f"{'.'.join(task.number.split('.')[:i])}"
-        if i == task.depth:
-            folder_name += f" {task.name}"
-        current_path = os.path.join(current_path, folder_name)
-        os.makedirs(current_path, exist_ok=True)
-    
+def write_research_to_file(task, research, output_folder):
     file_name = f"{task.number} {task.name}.md"
-    return os.path.join(current_path, file_name)
-
-def write_research_to_file(task, research, file_path):
+    file_path = os.path.join(output_folder, file_name)
+    
     with open(file_path, 'w') as f:
         f.write(f"# {task.number} {task.name}\n\n")
         f.write(research)
@@ -122,10 +99,9 @@ def write_research_to_file(task, research, file_path):
             for child in task.children:
                 f.write(f"- [{child.number} {child.name}]({child.number} {child.name}.md)\n")
 
-def process_task(task, base_path):
-    file_path = create_folder_structure(task, base_path)
+def process_task(task, output_folder):
     research = research_task(str(task))
-    write_research_to_file(task, research, file_path)
+    write_research_to_file(task, research, output_folder)
     return task
 
 def main(input_file, output_folder):
@@ -133,10 +109,11 @@ def main(input_file, output_folder):
     logger.info(f"Conducting research for goal: '{goal}' with {len(tasks)} top-level tasks")
     
     os.makedirs(output_folder, exist_ok=True)
-    with open(os.path.join(output_folder, "goal.md"), 'w') as f:
-        f.write(f"# {goal}\n\n")
-        for task in tasks:
-            f.write(f"- [{task.number} {task.name}]({task.number} {task.name}/{task.number} {task.name}.md)\n")
+    
+    # with open(os.path.join(output_folder, "goal.md"), 'w') as f:
+    #     f.write(f"# {goal}\n\n")
+    #     for task in tasks:
+    #         f.write(f"- [{task.number} {task.name}]({task.number} {task.name}.md)\n")
 
     all_tasks = []
     def flatten_tasks(task_list):
@@ -145,23 +122,21 @@ def main(input_file, output_folder):
             flatten_tasks(task.children)
     flatten_tasks(tasks)
 
-    with tqdm(total=len(all_tasks), desc="Researching tasks", unit="task") as pbar:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            future_to_task = {executor.submit(process_task, task, output_folder): task for task in all_tasks}
-            for future in concurrent.futures.as_completed(future_to_task):
-                task = future_to_task[future]
-                try:
-                    future.result()
-                except Exception as exc:
-                    logger.error(f'{task} generated an exception: {exc}')
-                pbar.update(1)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_task = {executor.submit(process_task, task, output_folder): task for task in all_tasks}
+        for future in concurrent.futures.as_completed(future_to_task):
+            task = future_to_task[future]
+            try:
+                future.result()
+            except Exception as exc:
+                logger.error(f'{task} generated an exception: {exc}')
 
-    logger.info(f"Research completed. Results written to folder structure in {output_folder}")
+    logger.info(f"Research completed. Results written to {output_folder}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Conduct background research on tasks and create folder structure")
-    parser.add_argument("--input", required=True, help="Input Markdown file with tasks")
-    parser.add_argument("--output", default="research_output", help="Output folder for research results")
+    parser = argparse.ArgumentParser(description="Conduct background research on tasks and create Markdown files")
+    parser.add_argument("--input", default="research_output.md", help="Input Markdown file with tasks")
+    parser.add_argument("--output", default=config.DEFAULT_OUTPUT_FOLDER, help="Output folder for research results")
     args = parser.parse_args()
 
     main(args.input, args.output)
