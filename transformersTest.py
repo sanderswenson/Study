@@ -1,7 +1,7 @@
 import torch
 import transformers
-from transformers import BertModel, BertTokenizer
-from transformers import pipeline
+from transformers import BertModel, BertTokenizer, BertForSequenceClassification
+from transformers import pipeline, Trainer, TrainingArguments
 
 print(torch.cuda.is_available())
 device = 0 if torch.cuda.is_available() else -1
@@ -10,9 +10,10 @@ device = 0 if torch.cuda.is_available() else -1
 
 
 
+train_encodings = tokenizer(train_texts, truncation=True, padding=True)
+val_encodings = tokenizer(val_texts, truncation=True, padding=True)
 
-
-model = BertModel.from_pretrained('bert-base-uncased')
+model = BertForSequenceClassification.from_pretrained('bert-base-uncased')
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
