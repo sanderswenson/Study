@@ -1,0 +1,32 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#taskList {
+    margin-top: 20px;
+}
+
+.main-goal {
+    background-color: #f0f0f0;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.task {
+    margin-bottom: 10px;
+    border-left: 2px solid #ccc;
+    padding-left: 10px;
+}
+
+.subtasks {
+    margin-left: 20px;
+    margin-top: 10px;
+}
+
+button {
+    margin-left: 10px;
+}

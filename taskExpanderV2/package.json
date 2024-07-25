@@ -1,0 +1,19 @@
+{
+  "name": "taskexpanderv2",
+  "version": "1.0.0",
+  "description": "Make a to-do list and do basic research on intermediate goals",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/server.js"
+  },
+  "author": "Sander S",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "openai": "^4.53.0"
+  }
+}
