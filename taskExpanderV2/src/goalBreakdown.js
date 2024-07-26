@@ -63,7 +63,7 @@ const aiProvider = {
 };
 
 const config = {
-    numTasks: 5,
+    numTasks: 10,
     promptTemplate: 'Break down this task "{goal}" into {num_tasks} sub-tasks. Consider:\n1. Each sub-task should be clear, concise, and directly related to the main task.\n2. Cover all necessary aspects to complete the main task.\n3. Organize sub-tasks in a logical sequence or priority order.\n4. Ensure sub-tasks specific enough for further intrumental goals.\nProvide your response as a numbered list:\n1. [First sub-task]\n2. [Second sub-task]\n3. [Third sub-task]\n...\nOnly list the sub-tasks without additional explanations.'
 };
 
